@@ -61,11 +61,15 @@ body,
 #app {
   width: 100%;
   height: 100%;
+  height: 100dvh;
   overflow: hidden;
+  overscroll-behavior: none;
   background: var(--bg);
   color: var(--text);
   font-family: var(--sans);
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -75,6 +79,7 @@ body,
   width: 100%;
   height: 100%;
   display: block;
+  touch-action: none;
   cursor: grab;
 }
 
@@ -708,7 +713,18 @@ body.zen-mode .hud-bottom {
   display: none !important;
 }
 
-@media (max-width: 1020px) {
+/* Desktop transparent wrapper for mobile bottom sheet */
+.mobile-sheet,
+.mobile-sheet-body {
+  display: contents;
+}
+
+.mobile-sheet-bar,
+.mobile-quick-row {
+  display: none;
+}
+
+@media (max-width: 1020px) and (min-width: 901px) {
   .hud-left,
   .hud-right {
     width: 230px;
@@ -716,5 +732,271 @@ body.zen-mode .hud-bottom {
   .cam-btn {
     padding: 6px 9px;
     font-size: 9px;
+  }
+}
+
+/* ==========================================================================
+   MOBILE & PORTRAIT PHONE LAYOUT (e.g. Pixel 9 Pro XL 412x915)
+   Controls start collapsed so the 3D tokamak fills the viewport cleanly.
+   ========================================================================== */
+@media (max-width: 900px) {
+  .desktop-only,
+  .brand-sub,
+  .metric-particles,
+  .hint-line {
+    display: none !important;
+  }
+
+  .hud-header {
+    top: calc(10px + env(safe-area-inset-top));
+    left: 12px;
+    right: 12px;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .brand-block {
+    padding: 8px 11px;
+    border-radius: 9px;
+  }
+
+  .brand-badge {
+    font-size: 13px;
+    gap: 7px;
+    letter-spacing: 0.11em;
+  }
+
+  .header-metrics {
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+
+  .metric-chip {
+    padding: 5px 8px;
+    border-radius: 8px;
+  }
+
+  .chip-label {
+    font-size: 7.5px;
+  }
+
+  .chip-value {
+    font-size: 10px;
+    white-space: nowrap;
+  }
+
+  /* Bottom quick controls & scrollable camera presets */
+  .hud-bottom {
+    left: 12px;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    transform: none;
+    align-items: stretch;
+    gap: 8px;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+
+  body.mobile-sheet-open .hud-bottom {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(16px);
+  }
+
+  .mobile-quick-row {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .mobile-pill {
+    flex: 1;
+    max-width: 190px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    backdrop-filter: blur(16px);
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.2s ease;
+  }
+
+  .mobile-pill:active {
+    transform: scale(0.97);
+  }
+
+  .mobile-pill.primary {
+    background: rgba(12, 26, 46, 0.84);
+    border: 1px solid rgba(56, 232, 255, 0.55);
+    color: var(--cyan);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  }
+
+  .mobile-pill.danger {
+    background: rgba(45, 12, 24, 0.82);
+    border: 1px solid rgba(255, 71, 105, 0.52);
+    color: #ff9cb0;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  }
+
+  .cam-bar {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 5px;
+    border-radius: 14px;
+    justify-content: flex-start;
+  }
+
+  .cam-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .cam-btn {
+    flex: 0 0 auto;
+    padding: 8px 11px;
+    font-size: 10px;
+  }
+
+  /* Slide-up translucent bottom drawer (collapsed by default on mobile) */
+  .mobile-sheet {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    max-height: 48dvh;
+    background: rgba(7, 13, 24, 0.88);
+    border: 1px solid var(--panel-border-hi);
+    border-radius: 16px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.65);
+    z-index: 30;
+    overflow: hidden;
+    transform: translateY(calc(100% + 40px));
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease;
+  }
+
+  body.mobile-sheet-open .mobile-sheet {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .mobile-sheet-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(110, 195, 255, 0.16);
+    flex-shrink: 0;
+  }
+
+  .mobile-sheet-tabs {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .sheet-tab {
+    flex: 1;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: rgba(14, 24, 42, 0.72);
+    border: 1px solid rgba(110, 195, 255, 0.16);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+  }
+
+  .sheet-tab.active {
+    background: rgba(56, 232, 255, 0.18);
+    border-color: var(--cyan);
+    color: #ffffff;
+  }
+
+  .sheet-close-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: rgba(14, 24, 42, 0.8);
+    border: 1px solid rgba(110, 195, 255, 0.24);
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .mobile-sheet-body {
+    display: block;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 12px 14px;
+  }
+
+  .hud-left,
+  .hud-right {
+    position: static;
+    width: 100%;
+    top: auto;
+    left: auto;
+    right: auto;
+    gap: 10px;
+  }
+
+  .mobile-sheet[data-tab="process"] .hud-right {
+    display: none;
+  }
+
+  .mobile-sheet[data-tab="controls"] .hud-left {
+    display: none;
+  }
+
+  .panel {
+    background: rgba(12, 20, 36, 0.52);
+    box-shadow: none;
+    padding: 11px 12px;
+  }
+
+  .action-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  input[type="range"] {
+    height: 6px;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    width: 20px;
+    height: 20px;
+  }
+
+  .seg-btn,
+  .toggle-btn,
+  .mode-btn,
+  .action-btn {
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+
+  .callout-card {
+    padding: 3px 6px;
+  }
+
+  .callout-title {
+    font-size: 9px;
+  }
+
+  .callout-sub {
+    display: none;
   }
 }

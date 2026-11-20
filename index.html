@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>HELIOS-IX — WebGPU Tokamak Fusion Reactor</title>
   </head>
   <body>
@@ -27,158 +27,175 @@
             <span class="chip-label">BACKEND</span>
             <span class="chip-value accent-cyan" id="backend-value">INITIALIZING...</span>
           </div>
-          <div class="metric-chip">
+          <div class="metric-chip metric-particles">
             <span class="chip-label">COMPUTE IONS</span>
             <span class="chip-value" id="particles-value">65,536</span>
           </div>
           <div class="metric-chip">
-            <span class="chip-label">FRAME RATE</span>
+            <span class="chip-label">FPS</span>
             <span class="chip-value" id="fps-value">-- FPS</span>
           </div>
-          <button class="icon-btn" id="btn-toggle-hud" title="Toggle HUD (H)">
+          <button class="icon-btn desktop-only" id="btn-toggle-hud" title="Toggle HUD (H)">
             <span>HIDE UI</span>
           </button>
         </div>
       </header>
 
-      <!-- Left Telemetry Stack -->
-      <aside class="hud-left" id="hud-left">
-        <div class="panel telemetry-panel">
-          <div class="panel-title">
-            <span>PLASMA TELEMETRY</span>
-            <span class="status-tag" id="state-badge">D-T IGNITION</span>
+      <!-- Mobile Sheet Header & Tabs (shown only on mobile when drawer is open) -->
+      <div class="mobile-sheet" id="mobile-sheet" data-tab="process">
+        <div class="mobile-sheet-bar">
+          <div class="mobile-sheet-tabs">
+            <button class="sheet-tab active" data-sheet-tab="process">TELEMETRY &amp; STAGE</button>
+            <button class="sheet-tab" data-sheet-tab="controls">ENGINEERING</button>
           </div>
-
-          <div class="telemetry-grid">
-            <div class="tel-item">
-              <div class="tel-label">CORE TEMP</div>
-              <div class="tel-val accent-gold" id="tel-temp">154.2 <small>MK</small></div>
-            </div>
-            <div class="tel-item">
-              <div class="tel-label">FUSION GAIN Q</div>
-              <div class="tel-val accent-cyan" id="tel-qgain">14.8</div>
-            </div>
-            <div class="tel-item">
-              <div class="tel-label">PLASMA CURRENT</div>
-              <div class="tel-val" id="tel-current">15.2 <small>MA</small></div>
-            </div>
-            <div class="tel-item">
-              <div class="tel-label">DIVERTOR FLUX</div>
-              <div class="tel-val accent-orange" id="tel-divertor">9.4 <small>MW/m²</small></div>
-            </div>
-          </div>
-
-          <div class="meter-block">
-            <div class="meter-row">
-              <span>CONFINEMENT STABILITY</span>
-              <span id="stability-pct">94%</span>
-            </div>
-            <div class="meter-track">
-              <div class="meter-fill" id="stability-bar" style="width: 94%"></div>
-            </div>
-          </div>
+          <button class="sheet-close-btn" id="btn-close-sheet" aria-label="Close controls">✕</button>
         </div>
 
-        <!-- Operating State Switcher -->
-        <div class="panel mode-panel">
-          <div class="panel-title"><span>REACTOR PROCESS STAGE</span></div>
-          <div class="mode-grid" id="mode-buttons">
-            <button class="mode-btn" data-mode="standby">
-              <span class="mode-step">01</span>
-              <span class="mode-name">CRYO STANDBY</span>
-            </button>
-            <button class="mode-btn" data-mode="ramp">
-              <span class="mode-step">02</span>
-              <span class="mode-name">MAGNETIC RAMP</span>
-            </button>
-            <button class="mode-btn active" data-mode="ignition">
-              <span class="mode-step">03</span>
-              <span class="mode-name">D-T IGNITION</span>
-            </button>
-            <button class="mode-btn" data-mode="overdrive">
-              <span class="mode-step">04</span>
-              <span class="mode-name">ELM OVERDRIVE</span>
-            </button>
-          </div>
+        <div class="mobile-sheet-body">
+          <!-- Left Telemetry Stack (floats left on desktop, tab 1 on mobile) -->
+          <aside class="hud-left" id="hud-left">
+            <div class="panel telemetry-panel">
+              <div class="panel-title">
+                <span>PLASMA TELEMETRY</span>
+                <span class="status-tag" id="state-badge">D-T IGNITION</span>
+              </div>
 
-          <div class="action-row">
-            <button class="action-btn danger" id="btn-elm">⚡ TRIGGER ELM BURST</button>
-            <button class="action-btn cyan" id="btn-nbi">✦ FIRE NBI PULSE</button>
-          </div>
+              <div class="telemetry-grid">
+                <div class="tel-item">
+                  <div class="tel-label">CORE TEMP</div>
+                  <div class="tel-val accent-gold" id="tel-temp">154.2 <small>MK</small></div>
+                </div>
+                <div class="tel-item">
+                  <div class="tel-label">FUSION GAIN Q</div>
+                  <div class="tel-val accent-cyan" id="tel-qgain">14.8</div>
+                </div>
+                <div class="tel-item">
+                  <div class="tel-label">PLASMA CURRENT</div>
+                  <div class="tel-val" id="tel-current">15.2 <small>MA</small></div>
+                </div>
+                <div class="tel-item">
+                  <div class="tel-label">DIVERTOR FLUX</div>
+                  <div class="tel-val accent-orange" id="tel-divertor">9.4 <small>MW/m²</small></div>
+                </div>
+              </div>
+
+              <div class="meter-block">
+                <div class="meter-row">
+                  <span>CONFINEMENT STABILITY</span>
+                  <span id="stability-pct">94%</span>
+                </div>
+                <div class="meter-track">
+                  <div class="meter-fill" id="stability-bar" style="width: 94%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Operating State Switcher -->
+            <div class="panel mode-panel">
+              <div class="panel-title"><span>REACTOR PROCESS STAGE</span></div>
+              <div class="mode-grid" id="mode-buttons">
+                <button class="mode-btn" data-mode="standby">
+                  <span class="mode-step">01</span>
+                  <span class="mode-name">CRYO STANDBY</span>
+                </button>
+                <button class="mode-btn" data-mode="ramp">
+                  <span class="mode-step">02</span>
+                  <span class="mode-name">MAGNETIC RAMP</span>
+                </button>
+                <button class="mode-btn active" data-mode="ignition">
+                  <span class="mode-step">03</span>
+                  <span class="mode-name">D-T IGNITION</span>
+                </button>
+                <button class="mode-btn" data-mode="overdrive">
+                  <span class="mode-step">04</span>
+                  <span class="mode-name">ELM OVERDRIVE</span>
+                </button>
+              </div>
+
+              <div class="action-row">
+                <button class="action-btn danger" id="btn-elm">⚡ TRIGGER ELM BURST</button>
+                <button class="action-btn cyan" id="btn-nbi">✦ FIRE NBI PULSE</button>
+              </div>
+            </div>
+          </aside>
+
+          <!-- Right Engineering Control Panel (floats right on desktop, tab 2 on mobile) -->
+          <aside class="hud-right" id="hud-right">
+            <div class="panel controls-panel">
+              <div class="panel-title">
+                <span>ENGINEERING CONTROLS</span>
+                <button class="mini-link" id="btn-reset">RESET</button>
+              </div>
+
+              <div class="control-group">
+                <div class="control-head">
+                  <label for="slider-cutaway">CUTAWAY / EXPLODE</label>
+                  <span class="control-val" id="val-cutaway">42%</span>
+                </div>
+                <input type="range" id="slider-cutaway" min="0" max="100" step="1" value="42" />
+                <div class="range-hints">
+                  <span>CLOSED</span>
+                  <span>CUTAWAY</span>
+                  <span>EXPLODED</span>
+                </div>
+              </div>
+
+              <div class="control-group">
+                <div class="control-head">
+                  <label for="slider-bfield">TOROIDAL FIELD B₀</label>
+                  <span class="control-val" id="val-bfield">11.8 T</span>
+                </div>
+                <input type="range" id="slider-bfield" min="2" max="14" step="0.1" value="11.8" />
+              </div>
+
+              <div class="control-group">
+                <div class="control-head">
+                  <label for="slider-heating">AUX HEATING POWER</label>
+                  <span class="control-val" id="val-heating">96 MW</span>
+                </div>
+                <input type="range" id="slider-heating" min="0" max="150" step="1" value="96" />
+              </div>
+
+              <div class="control-group">
+                <div class="control-head">
+                  <label for="slider-qfactor">SAFETY FACTOR q₉₅</label>
+                  <span class="control-val" id="val-qfactor">3.10</span>
+                </div>
+                <input type="range" id="slider-qfactor" min="1.4" max="6.0" step="0.05" value="3.1" />
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="control-group">
+                <div class="control-head">
+                  <span>GPU COMPUTE PARTICLES</span>
+                </div>
+                <div class="seg-group" id="particle-count-btns">
+                  <button class="seg-btn" data-count="16384">16K</button>
+                  <button class="seg-btn active" data-count="65536">65K</button>
+                  <button class="seg-btn" data-count="131072">131K</button>
+                </div>
+              </div>
+
+              <div class="toggle-grid">
+                <button class="toggle-btn active" id="toggle-flux">FLUX CAGE</button>
+                <button class="toggle-btn active" id="toggle-callouts">CALLOUTS</button>
+                <button class="toggle-btn active" id="toggle-orbit">AUTO ORBIT</button>
+                <button class="toggle-btn" id="toggle-backend" title="Switch WebGPU / WebGL2 backend">
+                  SWITCH GPU
+                </button>
+              </div>
+            </div>
+          </aside>
         </div>
-      </aside>
+      </div>
 
-      <!-- Right Engineering Control Panel -->
-      <aside class="hud-right" id="hud-right">
-        <div class="panel controls-panel">
-          <div class="panel-title">
-            <span>ENGINEERING CONTROLS</span>
-            <button class="mini-link" id="btn-reset">RESET</button>
-          </div>
-
-          <div class="control-group">
-            <div class="control-head">
-              <label for="slider-cutaway">CUTAWAY / EXPLODE</label>
-              <span class="control-val" id="val-cutaway">42%</span>
-            </div>
-            <input type="range" id="slider-cutaway" min="0" max="100" step="1" value="42" />
-            <div class="range-hints">
-              <span>CLOSED</span>
-              <span>CUTAWAY</span>
-              <span>EXPLODED</span>
-            </div>
-          </div>
-
-          <div class="control-group">
-            <div class="control-head">
-              <label for="slider-bfield">TOROIDAL FIELD B₀</label>
-              <span class="control-val" id="val-bfield">11.8 T</span>
-            </div>
-            <input type="range" id="slider-bfield" min="2" max="14" step="0.1" value="11.8" />
-          </div>
-
-          <div class="control-group">
-            <div class="control-head">
-              <label for="slider-heating">AUX HEATING POWER</label>
-              <span class="control-val" id="val-heating">96 MW</span>
-            </div>
-            <input type="range" id="slider-heating" min="0" max="150" step="1" value="96" />
-          </div>
-
-          <div class="control-group">
-            <div class="control-head">
-              <label for="slider-qfactor">SAFETY FACTOR q₉₅</label>
-              <span class="control-val" id="val-qfactor">3.10</span>
-            </div>
-            <input type="range" id="slider-qfactor" min="1.4" max="6.0" step="0.05" value="3.1" />
-          </div>
-
-          <div class="divider"></div>
-
-          <div class="control-group">
-            <div class="control-head">
-              <span>GPU COMPUTE PARTICLES</span>
-            </div>
-            <div class="seg-group" id="particle-count-btns">
-              <button class="seg-btn" data-count="16384">16K</button>
-              <button class="seg-btn active" data-count="65536">65K</button>
-              <button class="seg-btn" data-count="131072">131K</button>
-            </div>
-          </div>
-
-          <div class="toggle-grid">
-            <button class="toggle-btn active" id="toggle-flux">FLUX CAGE</button>
-            <button class="toggle-btn active" id="toggle-callouts">CALLOUTS</button>
-            <button class="toggle-btn active" id="toggle-orbit">AUTO ORBIT</button>
-            <button class="toggle-btn" id="toggle-backend" title="Switch WebGPU / WebGL2 backend">
-              SWITCH GPU
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      <!-- Bottom Camera Preset Bar -->
+      <!-- Bottom Camera Preset Bar & Mobile Quick Controls -->
       <nav class="hud-bottom" id="hud-bottom">
+        <div class="mobile-quick-row">
+          <button class="mobile-pill danger" id="btn-mobile-elm">⚡ ELM BURST</button>
+          <button class="mobile-pill primary" id="btn-mobile-controls">⚙ CONTROLS</button>
+        </div>
         <div class="cam-bar" id="camera-buttons">
           <button class="cam-btn active" data-cam="hero">01 HERO CUTAWAY</button>
           <button class="cam-btn" data-cam="core">02 DIVERTOR &amp; CORE</button>

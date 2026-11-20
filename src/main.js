@@ -48,6 +48,9 @@ async function init() {
   const params = new URLSearchParams(window.location.search);
   const forceWebGL = params.get('backend') === 'webgl';
 
+  const isMobile = window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
+  const initialParticleCount = isMobile ? 16384 : 65536;
+
   // 1. Initialize Three.js WebGPU Renderer (auto-falls back to WebGL2 if unavailable)
   const renderer = new THREE.WebGPURenderer({
     canvas,
@@ -55,7 +58,7 @@ async function init() {
     forceWebGL,
     powerPreference: 'high-performance',
   });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.75 : 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.08;
@@ -74,21 +77,31 @@ async function init() {
     }
   }
 
-  // 2. Scene, Camera & Controls
+  // 2. Scene, Camera & Controls (portrait-aware responsive FOV for phones)
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x04070e);
   scene.fog = new THREE.FogExp2(0x04070e, 0.032);
   scene.environment = buildStudioEnvironment(renderer);
   scene.environmentIntensity = 0.92;
 
-  const camera = new THREE.PerspectiveCamera(44, window.innerWidth / window.innerHeight, 0.08, 120);
+  const computeResponsiveFov = (aspect) => {
+    // Expand vertical FOV on portrait phones so the full tokamak fits horizontally with clean margins
+    if (aspect < 1.0) {
+      return Math.min(78, 46 / Math.pow(Math.max(aspect, 0.38), 0.64));
+    }
+    return 44;
+  };
+
+  const initialAspect = window.innerWidth / window.innerHeight;
+  const camera = new THREE.PerspectiveCamera(computeResponsiveFov(initialAspect), initialAspect, 0.08, 120);
   camera.position.copy(CAMERA_PRESETS.hero.pos);
 
   const controls = new OrbitControls(camera, canvas);
   controls.enableDamping = true;
   controls.dampingFactor = 0.06;
+  controls.enablePan = !isMobile;
   controls.minDistance = 1.8;
-  controls.maxDistance = 18.0;
+  controls.maxDistance = isMobile ? 22.0 : 18.0;
   controls.maxPolarAngle = Math.PI * 0.56;
   controls.target.copy(CAMERA_PRESETS.hero.target);
   controls.update();
@@ -123,9 +136,9 @@ async function init() {
   const tokamak = buildTokamak();
   scene.add(tokamak.root);
 
-  const plasma = new PlasmaSystem(renderer, isWebGPU, 65536);
+  const plasma = new PlasmaSystem(renderer, isWebGPU, initialParticleCount);
   scene.add(plasma.root);
-  await plasma.initParticles(65536);
+  await plasma.initParticles(initialParticleCount);
 
   // 5. WebGPU Node RenderPipeline with Selective HDR Bloom
   const renderPipeline = new THREE.RenderPipeline(renderer);
@@ -151,8 +164,9 @@ async function init() {
     elmBurst: 0.0,
     elmFlash: 0.0,
     nbiBoost: 0.0,
+    particleCount: initialParticleCount,
     showFlux: true,
-    showCallouts: true,
+    showCallouts: !isMobile,
     autoOrbit: true,
     activeCam: 'hero',
     pointerWorld: new THREE.Vector3(0, 99, 0),
@@ -239,10 +253,14 @@ async function init() {
   });
   hud.setBackendLabel(isWebGPU, adapterInfo);
 
-  // Resize handler
+  // Resize handler (recomputes portrait-friendly FOV on orientation change)
   window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
+    const aspect = window.innerWidth / window.innerHeight;
+    camera.aspect = aspect;
+    camera.fov = computeResponsiveFov(aspect);
     camera.updateProjectionMatrix();
+    const narrow = window.innerWidth <= 900;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, narrow ? 1.75 : 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 

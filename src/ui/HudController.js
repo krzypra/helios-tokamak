@@ -143,6 +143,10 @@ export class HudController {
       calloutsLayer: document.getElementById('callouts-layer'),
       btnToggleHud: document.getElementById('btn-toggle-hud'),
       btnRestoreHud: document.getElementById('btn-restore-hud'),
+      mobileSheet: document.getElementById('mobile-sheet'),
+      btnMobileControls: document.getElementById('btn-mobile-controls'),
+      btnMobileElm: document.getElementById('btn-mobile-elm'),
+      btnCloseSheet: document.getElementById('btn-close-sheet'),
     };
 
     this.calloutNodes = [];
@@ -150,25 +154,44 @@ export class HudController {
     this._fpsFrames = 0;
     this._fpsAcc = 0;
     this._hudTimer = 0;
+    this._isWebGPU = true;
 
     this._buildCallouts();
     this._bindEvents();
     this.syncSlidersFromState();
+    this.syncTogglesFromState();
   }
 
   setBackendLabel(isWebGPU, adapterInfo = '') {
+    this._isWebGPU = isWebGPU;
+    const compact = window.innerWidth <= 900;
     if (isWebGPU) {
-      this.el.backendValue.textContent = 'WEBGPU · WGSL COMPUTE';
+      this.el.backendValue.textContent = compact ? 'WEBGPU' : 'WEBGPU · WGSL COMPUTE';
       this.el.backendValue.classList.add('accent-cyan');
+      this.el.backendValue.classList.remove('accent-gold');
       this.el.toggleBackend.textContent = 'TRY WEBGL2';
       if (adapterInfo) {
         document.getElementById('backend-chip').title = `WebGPU Adapter: ${adapterInfo}`;
       }
     } else {
-      this.el.backendValue.textContent = 'WEBGL2 · TSL FALLBACK';
+      this.el.backendValue.textContent = compact ? 'WEBGL2' : 'WEBGL2 · TSL FALLBACK';
       this.el.backendValue.classList.remove('accent-cyan');
       this.el.backendValue.classList.add('accent-gold');
       this.el.toggleBackend.textContent = 'TRY WEBGPU';
+    }
+  }
+
+  syncTogglesFromState() {
+    this.el.toggleFlux.classList.toggle('active', this.state.showFlux);
+    this.el.toggleCallouts.classList.toggle('active', this.state.showCallouts);
+    this.el.calloutsLayer.classList.toggle('hidden', !this.state.showCallouts);
+    this.el.toggleOrbit.classList.toggle('active', this.state.autoOrbit);
+
+    if (this.state.particleCount) {
+      this.el.particlesValue.textContent = this.state.particleCount.toLocaleString();
+      document.querySelectorAll('#particle-count-btns .seg-btn').forEach((b) => {
+        b.classList.toggle('active', Number(b.dataset.count) === this.state.particleCount);
+      });
     }
   }
 
@@ -200,9 +223,32 @@ export class HudController {
     });
 
     // Action buttons
-    document.getElementById('btn-elm').addEventListener('click', () => {
+    const triggerElmAction = () => {
       this.state.elmBurst = Math.min(1.55, this.state.elmBurst + 1.15);
       this.state.elmFlash = 1.0;
+    };
+    document.getElementById('btn-elm').addEventListener('click', triggerElmAction);
+    this.el.btnMobileElm?.addEventListener('click', triggerElmAction);
+
+    // Mobile Bottom Sheet Drawer controls
+    this.el.btnMobileControls?.addEventListener('click', () => {
+      document.body.classList.add('mobile-sheet-open');
+    });
+    this.el.btnCloseSheet?.addEventListener('click', () => {
+      document.body.classList.remove('mobile-sheet-open');
+    });
+    document.querySelectorAll('.sheet-tab').forEach((tabBtn) => {
+      tabBtn.addEventListener('click', () => {
+        const tabKey = tabBtn.dataset.sheetTab;
+        if (this.el.mobileSheet) this.el.mobileSheet.dataset.tab = tabKey;
+        document.querySelectorAll('.sheet-tab').forEach((b) => {
+          b.classList.toggle('active', b.dataset.sheetTab === tabKey);
+        });
+      });
+    });
+
+    window.addEventListener('resize', () => {
+      this.setBackendLabel(this._isWebGPU);
     });
 
     document.getElementById('btn-nbi').addEventListener('click', () => {
@@ -406,7 +452,11 @@ export class HudController {
         }
         const sx = (this._projVec.x * 0.5 + 0.5) * w;
         const sy = (-this._projVec.y * 0.5 + 0.5) * h;
-        const inBounds = sx > 315 && sx < w - 340 && sy > 90 && sy < h - 95;
+        const isMobileWidth = w <= 900;
+        const padX = isMobileWidth ? 46 : 315;
+        const padRight = isMobileWidth ? 46 : 340;
+        const padY = isMobileWidth ? 78 : 90;
+        const inBounds = sx > padX && sx < w - padRight && sy > padY && sy < h - 110;
         item.node.style.opacity = inBounds ? '0.92' : '0';
         item.node.style.left = `${sx}px`;
         item.node.style.top = `${sy}px`;
