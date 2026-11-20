@@ -31,7 +31,7 @@ Publishing this project on a public domain is safe.
 - **No secrets or credentials**: The bundle stores no API keys, tokens, or internal URLs.
 - **No user data collection**: The app sets no cookies, writes no `localStorage`, and sends no analytics.
 - **Client-side GPU work only**: All WebGPU and WebGL computation executes on the visitor's device, not on your server.
-- **One optional external request**: `index.html` loads `Inter` and `JetBrains Mono` from Google Fonts (`fonts.googleapis.com` and `fonts.gstatic.com`). If you want zero third-party requests or a strict Content Security Policy, remove the three `<link>` font tags from `index.html`. The UI then uses local system fonts.
+- **Zero external requests**: Both `Inter` and `JetBrains Mono` (SIL Open Font License 1.1) are self-hosted in `src/assets/fonts/`. The built site makes no third-party network calls.
 
 ## HTTPS Requirement for WebGPU
 
@@ -141,13 +141,14 @@ Place this container behind your reverse proxy with HTTPS enabled.
 
 ```text
 helios-tokamak/
-├── index.html                  # App shell, HUD markup, optional font links
+├── index.html                  # App shell and HUD markup (zero external links)
 ├── vite.config.js              # Relative base path (./) for portable static hosting
 ├── package.json                # Dependencies (three 0.187.0, vite)
 ├── dist/                       # Generated static production output (upload this)
 └── src/
     ├── main.js                 # WebGPURenderer, RenderPipeline bloom, lighting, loop
-    ├── style.css               # HUD styling and Zen Mode rules
+    ├── style.css               # Self-hosted @font-face rules, HUD styling, Zen Mode
+    ├── assets/fonts/           # Self-hosted Inter and JetBrains Mono WOFF2 files
     ├── reactor/
     │   ├── tokamakMath.js      # Shared Miller D-section equilibrium geometry
     │   └── buildTokamak.js     # Procedural 3D coils, vessel, divertor, NBI, hall
